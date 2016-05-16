@@ -10,7 +10,7 @@ type Database struct {
 	source *elastic.Client
 }
 
-func (v Database) Init() {
+func (v *Database) Init() {
 	client, err := elastic.NewClient()
 	if err != nil {
 		panic(err)
@@ -29,7 +29,7 @@ func PrintQuery(query elastic.Query) {
 	}
 	fmt.Println(string(data))
 }
-func (v Database) GetEta() {
+func (v *Database) GetEta() {
 	query := elastic.NewBoolQuery()
 	query = query.Must(elastic.NewTermQuery("vacant", true))
 	distance := elastic.NewGeoDistanceQuery("location").Distance("40 km").Point(55.662987, 37.656230)
@@ -41,8 +41,8 @@ func (v Database) GetEta() {
 	}
 }
 
-func InitDatabase() Database {
-	database := Database{}
+func InitDatabase() *Database {
+	database := &Database{}
 	database.Init()
 	return database
 }
