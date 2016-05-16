@@ -29,16 +29,25 @@ func PrintQuery(query elastic.Query) {
 	}
 	fmt.Println(string(data))
 }
-func (v *Database) GetEta() {
+func (v *Database) GetEta() float64 {
+	lat := 55.662987
+	lon := 37.656230
 	query := elastic.NewBoolQuery()
 	query = query.Must(elastic.NewTermQuery("vacant", true))
-	distance := elastic.NewGeoDistanceQuery("location").Distance("40 km").Point(55.662987, 37.656230)
+	distance := elastic.NewGeoDistanceQuery("location").Distance("30km").Point(lat, lon)
 	query = query.Filter(distance)
-	PrintQuery(query)
-	_, err := v.source.Search().Index("cabs").Type("cab").Query(query).Do()
+	sorter := elastic.NewGeoDistanceSort("location").Point(lat, lon).Unit("km").GeoDistance("sloppy_arc").Asc()
+	result, err := v.source.Search().Index("cabs").Type("cab").Query(query).SortBy(sorter).Size(3).Pretty(true).Do()
 	if err != nil {
 		panic(err)
 	}
+	distance_sum := 0.0
+	if result.Hits != nil {
+		for _, hit := range result.Hits.Hits {
+			distance_sum += hit.Sort[0].(float64)
+		}
+	}
+	return distance_sum / float64(len(result.Hits.Hits))
 }
 
 func InitDatabase() *Database {

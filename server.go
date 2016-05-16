@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	// "gopkg.in/olivere/elastic.v3"
 	"log"
+	"fmt"
 )
 
 func Eta(c *gin.Context) {
@@ -19,7 +20,7 @@ func main() {
 	router := gin.Default()
 	router.GET("/api/v1/cabs/eta", Eta)
 
-	InitDatabase().GetEta()
+	fmt.Printf("%d", InitDatabase().GetEta())
 
 	log.Fatal(router.Run(":3000"))
 }
