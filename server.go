@@ -2,25 +2,25 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	// "gopkg.in/olivere/elastic.v3"
 	"log"
-	"fmt"
+	"strconv"
 )
 
 func Eta(c *gin.Context) {
-	lat := c.Query("lat")
-	lon := c.Query("lon")
+	lat, err := strconv.ParseFloat(c.Query("lat"), 64)
+	HandleError(err)
+	lon, err := strconv.ParseFloat(c.Query("lon"), 64)
+	HandleError(err)
+	eta := GetEta(lat, lon)
+
 	c.JSON(200, gin.H{
-		"lat": lat,
-		"lon": lon,
+		"eta": eta,
 	})
 }
 
 func main() {
 	router := gin.Default()
 	router.GET("/api/v1/cabs/eta", Eta)
-
-	fmt.Printf("%d", InitDatabase().GetEta())
-
+	InitDatabase()
 	log.Fatal(router.Run(":3000"))
 }
