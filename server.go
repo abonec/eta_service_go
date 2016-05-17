@@ -11,7 +11,7 @@ func Eta(c *gin.Context) {
 	HandleError(err)
 	lon, err := strconv.ParseFloat(c.Query("lon"), 64)
 	HandleError(err)
-	eta := GetEta(lat, lon)
+	eta := NewDbQuery().GetEta(lat, lon, true)
 
 	c.JSON(200, gin.H{
 		"eta": eta,
