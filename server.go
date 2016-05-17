@@ -6,12 +6,16 @@ import (
 	"strconv"
 )
 
+const (
+	IndexName = "cabs"
+)
+
 func Eta(c *gin.Context) {
 	lat, err := strconv.ParseFloat(c.Query("lat"), 64)
 	HandleError(err)
 	lon, err := strconv.ParseFloat(c.Query("lon"), 64)
 	HandleError(err)
-	eta := NewDbQuery().GetEta(lat, lon, true)
+	eta := NewDbQuery(IndexName).GetEta(lat, lon, true)
 
 	c.JSON(200, gin.H{
 		"eta": eta,
