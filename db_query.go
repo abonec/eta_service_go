@@ -22,6 +22,11 @@ func NewDbQuery() *DbQuery {
 	}
 }
 
+func (finder *DbQuery) SetIndex(index string) *DbQuery {
+	finder.index = index
+	return finder
+}
+
 func(finder *DbQuery) GetEta(lat, lon float64, vacant bool) float64 {
 	query := elastic.NewBoolQuery()
 	query = query.Must(elastic.NewTermQuery("vacant", vacant))
