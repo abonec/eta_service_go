@@ -45,3 +45,19 @@ func(finder *DbQuery) GetEta(lat, lon float64, vacant bool) float64 {
 	}
 	return distance_sum / float64(len(result.Hits.Hits)) * finder.etaModifier
 }
+
+func(finder *DbQuery) BulkIndex(cabs []*Cab, async bool) {
+	bulk := finder.client.Bulk().Refresh(!async)
+	for i:=0; i<len(cabs); i++ {
+		bulk.Add(elastic.NewBulkIndexRequest().Index(finder.index).Type(finder.indexType).Doc(cabs[i]))
+	}
+
+	_, err := bulk.Do()
+	HandleError(err)
+}
+
+func(finder *DbQuery) IndexSize() int64 {
+	count, err := finder.client.Count(finder.index).Do()
+	HandleError(err)
+	return count
+}

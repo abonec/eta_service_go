@@ -5,8 +5,8 @@ import (
 )
 
 func TestReadCabs(t *testing.T) {
-	cabs := ReadCabs("fixtures/cabs.txt", 1000)
-	if len(cabs) != 1000 {
+	cabs := ReadCabs(cab_fixtures_file_path, cab_fixtures_size)
+	if len(cabs) != cab_fixtures_size {
 		t.Error("ReadCabs should import only 1000 examples")
 	}
 
