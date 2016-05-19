@@ -1,7 +1,5 @@
 package main
 
-import "log"
-
 func (finder *DbQuery) PutMappings() *DbQuery {
 	mapping := `{
 		"cab":{
@@ -23,14 +21,14 @@ func (finder *DbQuery) PutMappings() *DbQuery {
 func (finder *DbQuery) CreateIndex() *DbQuery {
 	_, err := finder.client.CreateIndex(finder.index).Do()
 	HandleError(err)
-	log.Printf("Index %s created", finder.index)
+	LogInfo("Index %s created", finder.index)
 	return finder
 }
 
 func (finder *DbQuery) DestroyIndex() *DbQuery {
 	_, err := finder.client.DeleteIndex(finder.index).Do()
 	HandleError(err)
-	log.Printf("Index %s destroyed", finder.index)
+	LogInfo("Index %s destroyed", finder.index)
 	return finder
 }
 
@@ -61,7 +59,7 @@ func (finder *DbQuery) Migrate(fixtures_size int) *DbQuery {
 	finder.RecreateIndex()
 	cabs := ReadCabs(cab_fixtures_file_path, fixtures_size)
 	finder.BulkIndex(cabs, false, false)
-	log.Printf("Cabs are imported")
+	LogInfo("Cabs are imported")
 	return finder
 }
 
