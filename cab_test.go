@@ -14,7 +14,7 @@ func TestNewCabFromCoordinates(t *testing.T) {
 }
 
 func TestToCorrectUnmarshal(t *testing.T) {
-	cab := NewCabFromJson(`{"vacant": true, "location": {"lat": 1.5, "lon": 2.6}}`)
+	cab := NewCabFromJson([]byte(`{"vacant": true, "location": {"lat": 1.5, "lon": 2.6}}`))
 	if !cab.Vacant {
 		t.Error("Cab should be vacant")
 	}

@@ -32,9 +32,9 @@ func NewCabFromCoordinates(coordinates string, vacant bool) *Cab {
 	return cab
 }
 
-func NewCabFromJson(json_string string) *Cab {
+func NewCabFromJson(json_bytes []byte) *Cab {
 	cab := &Cab{}
-	err := json.Unmarshal([]byte(json_string), cab)
+	err := json.Unmarshal(json_bytes, cab)
 	HandleError(err)
 	return cab
 }

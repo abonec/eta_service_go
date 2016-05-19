@@ -41,5 +41,11 @@ func TestDbQuery_BulkIndex(t *testing.T) {
 	if actualSize != cab_fixtures_size {
 		t.Errorf("Cab index should be size of %d but was %d", cab_fixtures_size, actualSize )
 	}
+	firstCab := dbQuery.GetById(0)
+	lastCab := dbQuery.GetById(len(cabs) - 1)
+
+	if !EqualStructs(firstCab, cabs[0]) || !EqualStructs(lastCab, cabs[len(cabs) -1]) {
+		t.Error("Structs getted rom elastic is wrong")
+	}
 }
 

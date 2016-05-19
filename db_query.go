@@ -66,3 +66,12 @@ func(finder *DbQuery) IndexSize() int64 {
 	HandleError(err)
 	return count
 }
+
+func(finder *DbQuery) GetById(id int) *Cab {
+	get, err := finder.client.Get().Index(finder.index).Type(finder.indexType).Id(strconv.Itoa(id)).Do()
+	HandleError(err)
+	if get.Found {
+		return NewCabFromJson(*get.Source)
+	}
+	return nil
+}
