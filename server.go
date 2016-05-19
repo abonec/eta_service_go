@@ -11,7 +11,8 @@ const (
 )
 
 var (
-	migrate = flag.Bool("migrate", false, "create index and add fixture data")
+	mode = flag.String("mode", "server", "start in mode")
+	message = flag.String("message", "hello world", "message to send via message queue")
 )
 
 func Eta(c *gin.Context) {
@@ -30,13 +31,17 @@ func init() {
 	flag.Parse()
 	InitDatabase()
 	InitLogger()
+	InitMessageQueue()
 }
 func main() {
-	if !*migrate {
+	switch *mode {
+	case "server":
 		router := gin.Default()
 		router.GET("/api/v1/cabs/eta", Eta)
 		LogFatal(router.Run(":3000"))
-	} else {
+	case "migrate":
 		NewDbQuery(IndexName).Migrate(-1)
+	case "send_message":
+		SendMessage([]byte(*message))
 	}
 }
