@@ -43,10 +43,7 @@ func InitMessageQueue() {
 	}()
 }
 
-func MessageReceived(message amqp.Delivery) {
-	LogInfo("Received a message: %s", message.Body)
-}
-
+// This function is only for one time send for now
 func SendMessage(message []byte) {
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
@@ -77,3 +74,9 @@ func SendMessage(message []byte) {
 		})
 	failOnError(err, "Failed to publish a message")
 }
+
+func MessageReceived(message amqp.Delivery) {
+	LogInfo("Received a message: %s", message.Body)
+	NewDbQuery(IndexName).Put(NewCabFromJson(message.Body))
+}
+

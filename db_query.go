@@ -75,3 +75,8 @@ func(finder *DbQuery) GetById(id int) *Cab {
 	}
 	return nil
 }
+
+func(finder *DbQuery) Put(cab *Cab) {
+	_, err := finder.client.Index().Index(finder.index).Type(finder.indexType).BodyJson(cab).Do()
+	failOnError(err, "failed to add a cab")
+}
