@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"strconv"
+	"flag"
 )
 
 const (
@@ -23,8 +24,14 @@ func Eta(c *gin.Context) {
 }
 
 func main() {
-	router := gin.Default()
-	router.GET("/api/v1/cabs/eta", Eta)
+	migrate := flag.Bool("migrate", false, "create index and add fixture data")
+	flag.Parse()
 	InitDatabase()
-	log.Fatal(router.Run(":3000"))
+	if !*migrate {
+		router := gin.Default()
+		router.GET("/api/v1/cabs/eta", Eta)
+		log.Fatal(router.Run(":3000"))
+	} else {
+		NewDbQuery(IndexName).Migrate()
+	}
 }
