@@ -2,6 +2,7 @@ package main
 
 import (
 	"gopkg.in/olivere/elastic.v3"
+	"strconv"
 )
 
 type DbQuery struct {
@@ -46,10 +47,14 @@ func(finder *DbQuery) GetEta(lat, lon float64, vacant bool) float64 {
 	return distance_sum / float64(len(result.Hits.Hits)) * finder.etaModifier
 }
 
-func(finder *DbQuery) BulkIndex(cabs []*Cab, async bool) {
+func(finder *DbQuery) BulkIndex(cabs []*Cab, async bool, addId bool) {
 	bulk := finder.client.Bulk().Refresh(!async)
 	for i:=0; i<len(cabs); i++ {
-		bulk.Add(elastic.NewBulkIndexRequest().Index(finder.index).Type(finder.indexType).Doc(cabs[i]))
+		request := elastic.NewBulkIndexRequest().Index(finder.index).Type(finder.indexType).Doc(cabs[i])
+		if addId {
+			request = request.Id(strconv.Itoa(i))
+		}
+		bulk.Add(request)
 	}
 
 	_, err := bulk.Do()

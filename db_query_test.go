@@ -21,7 +21,7 @@ func TestNewDbQuery(t *testing.T) {
 }
 
 func TestDbQuery_CreateIndex(t *testing.T) {
-	dbQuery.DestroyIndex()
+	dbQuery.DestroyIndexIfExists()
 
 	if dbQuery.IndexExists() {
 		t.Error("test index should not exitsts")
@@ -36,7 +36,7 @@ func TestDbQuery_BulkIndex(t *testing.T) {
 	dbQuery.DestroyIndex()
 	dbQuery.CreateIndex()
 	cabs := ReadCabs(cab_fixtures_file_path, cab_fixtures_size)
-	dbQuery.BulkIndex(cabs, false)
+	dbQuery.BulkIndex(cabs, false, true)
 	actualSize := dbQuery.IndexSize()
 	if actualSize != cab_fixtures_size {
 		t.Errorf("Cab index should be size of %d but was %d", cab_fixtures_size, actualSize )

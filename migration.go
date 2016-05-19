@@ -41,6 +41,13 @@ func (finder *DbQuery) DestroyIndexIfExists() *DbQuery {
 	return finder
 }
 
+func (finder *DbQuery) RecreateIndex() *DbQuery {
+	finder.DestroyIndexIfExists()
+	finder.CreateIndex()
+	finder.PutMappings()
+
+	return finder
+}
 func (finder *DbQuery) IndexExists() bool {
 	exist, err := finder.client.IndexExists(finder.index).Do()
 	if err != nil {
@@ -51,11 +58,11 @@ func (finder *DbQuery) IndexExists() bool {
 }
 
 func (finder *DbQuery) Migrate(fixtures_size int) *DbQuery {
-	finder.DestroyIndexIfExists()
-	finder.CreateIndex()
-	finder.PutMappings()
+	finder.RecreateIndex()
 	cabs := ReadCabs(cab_fixtures_file_path, fixtures_size)
-	finder.BulkIndex(cabs, false)
+	finder.BulkIndex(cabs, false, false)
 	log.Printf("Cabs are imported")
 	return finder
 }
+
+
