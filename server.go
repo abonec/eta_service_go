@@ -32,6 +32,6 @@ func main() {
 		router.GET("/api/v1/cabs/eta", Eta)
 		log.Fatal(router.Run(":3000"))
 	} else {
-		NewDbQuery(IndexName).Migrate()
+		NewDbQuery(IndexName).Migrate(-1)
 	}
 }
