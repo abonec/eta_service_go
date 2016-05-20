@@ -117,6 +117,6 @@ func InitMessageQueue() {
 
 // This function is only for one time send for now
 func SendMessage(message []byte) {
-	amqpMessager.NewAMQPSender(messager_cab_queue_name).Send(message)
+	amqpSender.Send(message)
 }
 
