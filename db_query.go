@@ -3,6 +3,7 @@ package main
 import (
 	"gopkg.in/olivere/elastic.v3"
 	"strconv"
+	"math"
 )
 
 type DbQuery struct {
@@ -44,7 +45,11 @@ func(finder *DbQuery) GetEta(lat, lon float64, vacant bool) float64 {
 			distance_sum += hit.Sort[0].(float64)
 		}
 	}
-	return distance_sum / float64(len(result.Hits.Hits)) * finder.etaModifier
+	eta := distance_sum / float64(len(result.Hits.Hits)) * finder.etaModifier
+	if math.IsNaN(eta) {
+		return -1
+	}
+	return eta
 }
 
 func(finder *DbQuery) BulkIndex(cabs []*Cab, async bool, addId bool) {
