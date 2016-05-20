@@ -39,3 +39,9 @@ func NewCabFromJson(json_bytes []byte) *Cab {
 	return cab
 }
 
+func (cab *Cab) ToJson() []byte {
+	result, err := json.Marshal(cab)
+	HandleError(err)
+	return result
+}
+

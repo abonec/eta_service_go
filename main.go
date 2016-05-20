@@ -14,6 +14,8 @@ func main() {
 	switch *mode {
 	case "eta_server":
 		StartEtaServer()
+	case "update_cab_server":
+		StartUpdateCabServer()
 	case "migrate":
 		Migrate()
 	case "send_message":

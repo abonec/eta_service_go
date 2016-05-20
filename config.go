@@ -18,4 +18,5 @@ var (
 	message = flag.String("message", "hello world", "message to send via message queue")
 	database *elastic.Client
 	amqpMessager *AMQPMessager
+	amqpSender *AMQPSender
 )
