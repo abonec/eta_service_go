@@ -4,10 +4,6 @@ import (
 	"github.com/streadway/amqp"
 )
 
-const (
-	cab_queue_name = "cab_queue"
-)
-
 func InitMessageQueue() {
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")

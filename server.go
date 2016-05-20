@@ -6,15 +6,6 @@ import (
 	"flag"
 )
 
-const (
-	IndexName = "cabs"
-)
-
-var (
-	mode = flag.String("mode", "server", "start in mode")
-	message = flag.String("message", "hello world", "message to send via message queue")
-)
-
 func Eta(c *gin.Context) {
 	lat, err := strconv.ParseFloat(c.Query("lat"), 64)
 	HandleError(err)
