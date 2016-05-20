@@ -13,7 +13,7 @@ const (
 )
 
 var (
-	mode = flag.String("mode", "server", "start in mode")
+	mode = flag.String("mode", "eta_server", "start in mode")
 	message = flag.String("message", "hello world", "message to send via message queue")
 	database *elastic.Client
 )

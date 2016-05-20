@@ -63,4 +63,8 @@ func (finder *DbQuery) Migrate(fixtures_size int) *DbQuery {
 	return finder
 }
 
+func Migrate() {
+	NewDbQuery(IndexName).Migrate(-1)
+}
+
 

@@ -3,10 +3,9 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"strconv"
-	"flag"
 )
 
-func Eta(c *gin.Context) {
+func EtaApi(c *gin.Context) {
 	lat, err := strconv.ParseFloat(c.Query("lat"), 64)
 	HandleError(err)
 	lon, err := strconv.ParseFloat(c.Query("lon"), 64)
@@ -18,21 +17,8 @@ func Eta(c *gin.Context) {
 	})
 }
 
-func init() {
-	flag.Parse()
-	InitDatabase()
-	InitLogger()
-	InitMessageQueue()
-}
-func main() {
-	switch *mode {
-	case "server":
-		router := gin.Default()
-		router.GET("/api/v1/cabs/eta", Eta)
-		LogFatal(router.Run(":3000"))
-	case "migrate":
-		NewDbQuery(IndexName).Migrate(-1)
-	case "send_message":
-		SendMessage([]byte(*message))
-	}
+func StartEtaServer(){
+	router := gin.Default()
+	router.GET("/api/v1/cabs/eta", EtaApi)
+	LogFatal(router.Run(":3000"))
 }
