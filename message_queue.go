@@ -4,15 +4,80 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func InitMessageQueue() {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+type AMQPMessager struct {
+	url string
+	connection *amqp.Connection
+	channel *amqp.Channel
+}
+
+type AMQPSender struct {
+	messager *AMQPMessager
+	queue amqp.Queue //check this pointer out
+}
+
+func NewAMQPMessager(url string) *AMQPMessager {
+	messager := &AMQPMessager{
+		url: url,
+	}
+	return messager
+}
+
+func (messager *AMQPMessager) NewAMQPSender(queue_name string) *AMQPSender {
+	queue, err := messager.channel.QueueDeclare(
+		queue_name, // name
+		false,   // durable
+		false,   // delete when unused
+		false,   // exclusive
+		false,   // no-wait
+		nil,     // arguments
+	)
+	failOnError(err, "Failed to declare a queue")
+	sender := &AMQPSender{
+		messager: messager,
+		queue: queue,
+	}
+
+	return sender
+}
+
+func (sender *AMQPSender) Send(message []byte) *AMQPSender {
+	err := sender.messager.channel.Publish(
+		"",     // exchange
+		sender.queue.Name, // routing key
+		false,  // mandatory
+		false,  // immediate
+		amqp.Publishing {
+			ContentType: "text/plain",
+			Body:        message,
+		})
+	failOnError(err, "Failed to publish a message")
+
+	return sender
+}
+
+func (messager *AMQPMessager) Connect() *AMQPMessager {
+	connection, err := amqp.Dial(messager.url)
 	failOnError(err, "Failed to connect to RabbitMQ")
+	messager.connection = connection
 
-	ch, err := conn.Channel()
+	channel, err := connection.Channel()
 	failOnError(err, "Failed to open a channel")
+	messager.channel = channel
 
-	queue, err := ch.QueueDeclare(
-		cab_queue_name, // name
+	return messager
+}
+
+func (messager *AMQPMessager) Disconnect() *AMQPMessager {
+	messager.channel.Close()
+	messager.connection.Close()
+	return messager
+}
+
+
+type consumeCallback func(amqp.Delivery)
+func (messager *AMQPMessager) Consume(queue_name string, callback consumeCallback) *AMQPMessager {
+	queue, err := messager.channel.QueueDeclare(
+		queue_name, // name
 		false,   // durable
 		false,   // delete when usused
 		false,   // exclusive
@@ -21,7 +86,7 @@ func InitMessageQueue() {
 	)
 	failOnError(err, "Failed to declare a queue")
 
-	messages, err := ch.Consume(
+	messages, err := messager.channel.Consume(
 		queue.Name, // queue
 		"", // consumer
 		true, // auto-ack
@@ -34,45 +99,23 @@ func InitMessageQueue() {
 
 	go func() {
 		for message := range messages {
-			MessageReceived(message)
+			callback(message)
 		}
 	}()
+
+	return messager
+}
+func MessagerCabUpdate(message amqp.Delivery) {
+	LogInfo("Received a message: %s", message.Body)
+	NewDbQuery(IndexName).Put(NewCabFromJson(message.Body))
+}
+func InitMessageQueue() {
+	amqpMessager = NewAMQPMessager(messager_queue_url).Connect()
+	amqpMessager.Consume(messager_cab_queue_name, MessagerCabUpdate)
 }
 
 // This function is only for one time send for now
 func SendMessage(message []byte) {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-	failOnError(err, "Failed to connect to RabbitMQ")
-	defer conn.Close()
-
-	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
-	defer ch.Close()
-
-	q, err := ch.QueueDeclare(
-		cab_queue_name, // name
-		false,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
-	)
-	failOnError(err, "Failed to declare a queue")
-
-	err = ch.Publish(
-		"",     // exchange
-		q.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
-		amqp.Publishing {
-			ContentType: "text/plain",
-			Body:        message,
-		})
-	failOnError(err, "Failed to publish a message")
-}
-
-func MessageReceived(message amqp.Delivery) {
-	LogInfo("Received a message: %s", message.Body)
-	NewDbQuery(IndexName).Put(NewCabFromJson(message.Body))
+	amqpMessager.NewAMQPSender(messager_cab_queue_name).Send(message)
 }
 
