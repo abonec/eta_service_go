@@ -4,6 +4,7 @@ import (
 	"gopkg.in/olivere/elastic.v3"
 	"strconv"
 	"math"
+	"fmt"
 )
 
 type DbQuery struct {
@@ -82,6 +83,9 @@ func(finder *DbQuery) GetById(id int) *Cab {
 }
 
 func(finder *DbQuery) Put(cab *Cab) {
-	_, err := finder.client.Index().Index(finder.index).Type(finder.indexType).BodyJson(cab).Do()
+	response, err := finder.client.Index().Index(finder.index).Type(finder.indexType).BodyJson(cab).Do()
 	failOnError(err, "failed to add a cab")
+	broadcast := fmt.Sprintf("%s with id '%s' was sent to index '%s' and has created status as %t",
+		response.Type, response.Id, response.Index, response.Created)
+	amqpCabUpdatedExchange.Publish([]byte(broadcast))
 }
