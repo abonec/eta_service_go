@@ -16,6 +16,8 @@ func main() {
 		StartEtaServer()
 	case "update_cab_server":
 		StartUpdateCabServer()
+	case "update_server_log":
+		StartUpdateServerLog()
 	case "migrate":
 		Migrate()
 	case "send_message":
