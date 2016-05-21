@@ -111,7 +111,13 @@ func MessagerCabUpdate(message amqp.Delivery) {
 }
 func InitMessageQueue() {
 	amqpMessager = NewAMQPMessager(messager_queue_url).Connect()
+}
+
+func InitConsumer(){
 	amqpMessager.Consume(messager_cab_queue_name, MessagerCabUpdate)
+}
+
+func InitSender(){
 	amqpSender = amqpMessager.NewAMQPSender(messager_cab_queue_name)
 }
 

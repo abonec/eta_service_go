@@ -83,12 +83,14 @@ func MissingParam(context *gin.Context, err error, paramName string, code int) b
 }
 
 func StartEtaServer(){
+	InitConsumer()
 	router := gin.Default()
 	router.GET("/api/v1/cabs/eta", EtaApi)
 	LogFatal(router.Run(":3000"))
 }
 
 func StartUpdateCabServer(){
+	InitSender()
 	router := gin.Default()
 	router.PUT("/api/v1/cabs", CabsUpdate)
 	LogFatal(router.Run(":3001"))
