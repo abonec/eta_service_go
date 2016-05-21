@@ -1,8 +1,8 @@
 package main
 
 import (
-	"os"
 	"bufio"
+	"os"
 )
 
 func ReadFixtures(path string, size int) []string {

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"strings"
-	"strconv"
 	"encoding/json"
+	"strconv"
+	"strings"
 )
 
 type Location struct {
@@ -11,9 +11,8 @@ type Location struct {
 	Lon float64 `json:"lon"`
 }
 type Cab struct {
-	Vacant bool `json:"vacant"`
+	Vacant   bool     `json:"vacant"`
 	Location Location `json:"location"`
-
 }
 
 func NewCabFromCoordinates(coordinates string, vacant bool) *Cab {
@@ -22,9 +21,9 @@ func NewCabFromCoordinates(coordinates string, vacant bool) *Cab {
 	HandleError(err)
 	lon, err := strconv.ParseFloat(strings.TrimSpace(split[1]), 64)
 	HandleError(err)
-	cab := &Cab {
+	cab := &Cab{
 		Vacant: vacant,
-		Location: Location {
+		Location: Location{
 			Lat: lat,
 			Lon: lon,
 		},
@@ -44,4 +43,3 @@ func (cab *Cab) ToJson() []byte {
 	HandleError(err)
 	return result
 }
-

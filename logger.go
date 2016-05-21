@@ -29,7 +29,6 @@ func InitLogger() {
 	// Set the backends to be used.
 	logging.SetBackend(backend1Leveled, backend2Formatter)
 
-
 }
 func LogFatal(v ...interface{}) {
 	log.Fatal(v)
@@ -41,4 +40,3 @@ func LogInfo(format string, v ...interface{}) {
 func LogError(format string, v ...interface{}) {
 	logger.Errorf(format, v...)
 }
-

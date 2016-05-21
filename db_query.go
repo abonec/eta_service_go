@@ -1,37 +1,35 @@
 package main
 
 import (
-	"gopkg.in/olivere/elastic.v3"
-	"strconv"
-	"math"
 	"fmt"
+	"gopkg.in/olivere/elastic.v3"
+	"math"
+	"strconv"
 )
 
 type DbQuery struct {
-	index string
-	indexType string
-	lat float64
-	lon float64
-	distance string
+	index       string
+	indexType   string
+	lat         float64
+	lon         float64
+	distance    string
 	etaModifier float64
-	cabSize int
-	client *elastic.Client
+	cabSize     int
+	client      *elastic.Client
 }
 
 func NewDbQuery(index string) *DbQuery {
 	return &DbQuery{
-		index: index,
-		indexType: "cab",
-		distance: "30km",
+		index:       index,
+		indexType:   "cab",
+		distance:    "30km",
 		etaModifier: 1.5,
-		cabSize: 3,
-		client: database,
+		cabSize:     3,
+		client:      database,
 	}
 }
 
-
-
-func(finder *DbQuery) GetEta(lat, lon float64, vacant bool) float64 {
+func (finder *DbQuery) GetEta(lat, lon float64, vacant bool) float64 {
 	query := elastic.NewBoolQuery()
 	query = query.Must(elastic.NewTermQuery("vacant", vacant))
 	distanceQuery := elastic.NewGeoDistanceQuery("location").Distance(finder.distance).Point(lat, lon)
@@ -53,9 +51,9 @@ func(finder *DbQuery) GetEta(lat, lon float64, vacant bool) float64 {
 	return eta
 }
 
-func(finder *DbQuery) BulkIndex(cabs []*Cab, async bool, addId bool) {
+func (finder *DbQuery) BulkIndex(cabs []*Cab, async bool, addId bool) {
 	bulk := finder.client.Bulk().Refresh(!async)
-	for i:=0; i<len(cabs); i++ {
+	for i := 0; i < len(cabs); i++ {
 		request := elastic.NewBulkIndexRequest().Index(finder.index).Type(finder.indexType).Doc(cabs[i])
 		if addId {
 			request = request.Id(strconv.Itoa(i))
@@ -67,13 +65,13 @@ func(finder *DbQuery) BulkIndex(cabs []*Cab, async bool, addId bool) {
 	HandleError(err)
 }
 
-func(finder *DbQuery) IndexSize() int64 {
+func (finder *DbQuery) IndexSize() int64 {
 	count, err := finder.client.Count(finder.index).Do()
 	HandleError(err)
 	return count
 }
 
-func(finder *DbQuery) GetById(id int) *Cab {
+func (finder *DbQuery) GetById(id int) *Cab {
 	get, err := finder.client.Get().Index(finder.index).Type(finder.indexType).Id(strconv.Itoa(id)).Do()
 	HandleError(err)
 	if get.Found {
@@ -82,7 +80,7 @@ func(finder *DbQuery) GetById(id int) *Cab {
 	return nil
 }
 
-func(finder *DbQuery) Put(cab *Cab) {
+func (finder *DbQuery) Put(cab *Cab) {
 	response, err := finder.client.Index().Index(finder.index).Type(finder.indexType).BodyJson(cab).Do()
 	failOnError(err, "failed to add a cab")
 	broadcast := fmt.Sprintf("%s with id '%s' was sent to index '%s' and has created status as %t",

@@ -5,9 +5,9 @@ import (
 )
 
 type AMQPMessager struct {
-	url string
+	url        string
 	connection *amqp.Connection
-	channel *amqp.Channel
+	channel    *amqp.Channel
 }
 
 func NewAMQPMessager(url string) *AMQPMessager {
@@ -20,16 +20,16 @@ func NewAMQPMessager(url string) *AMQPMessager {
 func (messager *AMQPMessager) NewAMQPSender(queue_name string) *AMQPSender {
 	queue, err := messager.channel.QueueDeclare(
 		queue_name, // name
-		false,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
+		false,      // durable
+		false,      // delete when unused
+		false,      // exclusive
+		false,      // no-wait
+		nil,        // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
 	sender := &AMQPSender{
 		messager: messager,
-		queue: queue,
+		queue:    queue,
 	}
 
 	return sender
@@ -38,33 +38,33 @@ func (messager *AMQPMessager) NewAMQPSender(queue_name string) *AMQPSender {
 func (messager *AMQPMessager) DeclareQueue(queueName string, exclusive bool) *AMQPQueue {
 	queue, err := messager.channel.QueueDeclare(
 		queueName, // name
-		false,   // durable
-		false,   // delete when usused
-		exclusive,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
+		false,     // durable
+		false,     // delete when usused
+		exclusive, // exclusive
+		false,     // no-wait
+		nil,       // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
 	return &AMQPQueue{
-		queue: queue,
+		queue:    queue,
 		messager: messager,
 	}
 }
 
-func (messager *AMQPMessager)DeclareFanoutExchange(exchangeName string) *AMQPFanoutExchange {
+func (messager *AMQPMessager) DeclareFanoutExchange(exchangeName string) *AMQPFanoutExchange {
 	err := messager.channel.ExchangeDeclare(
-		exchangeName,   // name
-		"fanout", // type
-		true,     // durable
-		false,    // auto-deleted
-		false,    // internal
-		false,    // no-wait
-		nil,      // arguments
+		exchangeName, // name
+		"fanout",     // type
+		true,         // durable
+		false,        // auto-deleted
+		false,        // internal
+		false,        // no-wait
+		nil,          // arguments
 	)
 	failOnError(err, "Failed to declare an exchange")
 
 	return &AMQPFanoutExchange{
-		messager: messager,
+		messager:     messager,
 		exchangeName: exchangeName,
 	}
 }
@@ -87,19 +87,18 @@ func (messager *AMQPMessager) Disconnect() *AMQPMessager {
 	return messager
 }
 
-
 type AMQPSender struct {
 	messager *AMQPMessager
-	queue amqp.Queue //check this pointer out
+	queue    amqp.Queue //check this pointer out
 }
 
 func (sender *AMQPSender) Send(message []byte) *AMQPSender {
 	err := sender.messager.channel.Publish(
-		"",     // exchange
+		"",                // exchange
 		sender.queue.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
-		amqp.Publishing {
+		false,             // mandatory
+		false,             // immediate
+		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        message,
 		})
@@ -109,20 +108,21 @@ func (sender *AMQPSender) Send(message []byte) *AMQPSender {
 }
 
 type AMQPQueue struct {
-	queue amqp.Queue
+	queue    amqp.Queue
 	messager *AMQPMessager
 }
 
 type consumeCallback func(amqp.Delivery)
+
 func (queue *AMQPQueue) Consume(callback consumeCallback) {
 	messages, err := queue.messager.channel.Consume(
 		queue.queue.Name, // queue
-		"", // consumer
-		true, // auto-ack
-		false, // exclusive
-		false, // no-local
-		false, // no-wait
-		nil, // args
+		"",               // consumer
+		true,             // auto-ack
+		false,            // exclusive
+		false,            // no-local
+		false,            // no-wait
+		nil,              // args
 	)
 	failOnError(err, "Failed to register a consumer")
 
@@ -136,7 +136,7 @@ func (queue *AMQPQueue) Consume(callback consumeCallback) {
 func (queue *AMQPQueue) Bind(exchange *AMQPFanoutExchange) *AMQPQueue {
 	err := queue.messager.channel.QueueBind(
 		queue.queue.Name, // queue name
-		"",     // routing key
+		"",               // routing key
 		exchange.exchangeName, // exchange
 		false,
 		nil)
@@ -145,16 +145,16 @@ func (queue *AMQPQueue) Bind(exchange *AMQPFanoutExchange) *AMQPQueue {
 }
 
 type AMQPFanoutExchange struct {
-	messager *AMQPMessager
+	messager     *AMQPMessager
 	exchangeName string
 }
 
 func (exchange *AMQPFanoutExchange) Publish(message []byte) {
 	err := exchange.messager.channel.Publish(
 		exchange.exchangeName, // exchange
-		"",     // routing key
-		false,  // mandatory
-		false,  // immediate
+		"",    // routing key
+		false, // mandatory
+		false, // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        message,
@@ -174,18 +174,18 @@ func InitMessageQueue() {
 	amqpMessager = NewAMQPMessager(messager_queue_url).Connect()
 	amqpCabUpdatedExchange = amqpMessager.DeclareFanoutExchange(messager_cab_updated_exchange_name)
 }
-func InitMessagerConsumer(){
+func InitMessagerConsumer() {
 	amqpMessager.DeclareQueue(messager_cab_queue_name, false).Consume(MessagerCabUpdate)
 }
 
-func InitMessagerSender(){
+func InitMessagerSender() {
 	amqpSender = amqpMessager.NewAMQPSender(messager_cab_queue_name)
 }
 
-func InitMessagerLogger(){
+func InitMessagerLogger() {
 	amqpMessager.DeclareQueue(messager_cab_updated_name, true).Bind(amqpCabUpdatedExchange).Consume(CabUpdatedCallback)
 	forever := make(chan bool)
-	<- forever
+	<-forever
 
 }
 
@@ -193,4 +193,3 @@ func InitMessagerLogger(){
 func SendMessage(message []byte) {
 	amqpSender.Send(message)
 }
-

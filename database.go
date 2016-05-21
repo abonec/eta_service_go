@@ -9,4 +9,3 @@ func InitDatabase() {
 	HandleError(err)
 	database = client
 }
-

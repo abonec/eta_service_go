@@ -1,12 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"strconv"
-	"fmt"
 )
 
 type paramMethod func(string) string
+
 func GetFloat64(context *gin.Context, paramName string, method paramMethod) (float64, error) {
 	result, err := strconv.ParseFloat(method(paramName), 64)
 	return result, err
@@ -53,21 +54,20 @@ func CabsUpdate(c *gin.Context) {
 			Lat: lat,
 			Lon: lon,
 		},
-
 	}
 	amqpSender.Send(cab.ToJson())
 
 	c.JSON(200, gin.H{
 		"result": "ok",
-		"queue": "sent",
+		"queue":  "sent",
 	})
 }
 
 func SendErrorBack(c *gin.Context, message string, code int) {
 	c.JSON(500, gin.H{
 		"error": gin.H{
-			"message" : message,
-			"code": code,
+			"message": message,
+			"code":    code,
 		},
 	})
 }
@@ -82,14 +82,14 @@ func MissingParam(context *gin.Context, err error, paramName string, code int) b
 	}
 }
 
-func StartEtaServer(){
+func StartEtaServer() {
 	InitMessagerConsumer()
 	router := gin.Default()
 	router.GET("/api/v1/cabs/eta", EtaApi)
 	LogFatal(router.Run(":3000"))
 }
 
-func StartUpdateCabServer(){
+func StartUpdateCabServer() {
 	InitMessagerSender()
 	router := gin.Default()
 	router.PUT("/api/v1/cabs", CabsUpdate)

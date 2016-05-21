@@ -9,4 +9,3 @@ func NewTestQuery() *DbQuery {
 func EqualStructs(first, second interface{}) bool {
 	return reflect.DeepEqual(first, second)
 }
-
